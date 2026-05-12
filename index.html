@@ -1,0 +1,922 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Froggy Math Jump</title>
+
+<style>
+/* ======================================================
+   FROGGY MATH JUMP
+   Game Edukasi Matematika Kelas 2 SD
+   Single File HTML5 + CSS + JavaScript
+====================================================== */
+
+:root{
+  --green:#63d471;
+  --darkGreen:#2d6a4f;
+  --light:#f8fff8;
+  --blue:#74c0fc;
+  --water:#4dabf7;
+  --yellow:#ffd43b;
+  --danger:#ff6b6b;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  overflow:hidden;
+  font-family:'Trebuchet MS', sans-serif;
+  background:#9be7ff;
+  color:white;
+}
+
+/* =========================
+   MAIN MENU
+========================= */
+
+#menu{
+  position:fixed;
+  inset:0;
+  background:
+    linear-gradient(to bottom,#87e0ff,#57c5ff 60%,#3ca55c);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  z-index:20;
+}
+
+.title{
+  font-size:clamp(2rem,5vw,5rem);
+  text-shadow:3px 3px 0 rgba(0,0,0,.2);
+  animation:bounce 2s infinite;
+}
+
+.subtitle{
+  font-size:1rem;
+  opacity:.9;
+}
+
+.menu-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:15px;
+  justify-content:center;
+}
+
+.menu-btn{
+  padding:18px 28px;
+  border:none;
+  border-radius:20px;
+  font-size:1.2rem;
+  cursor:pointer;
+  background:var(--yellow);
+  color:#333;
+  font-weight:bold;
+  box-shadow:0 8px 0 #e0b100;
+  transition:.2s;
+}
+
+.menu-btn:hover{
+  transform:translateY(-3px);
+}
+
+.menu-btn:active{
+  transform:translateY(5px);
+  box-shadow:0 3px 0 #e0b100;
+}
+
+/* =========================
+   TOP CONTROLS
+========================= */
+
+.top-controls{
+  position:fixed;
+  top:10px;
+  right:10px;
+  display:flex;
+  gap:10px;
+  z-index:15;
+}
+
+.icon-btn{
+  width:50px;
+  height:50px;
+  border:none;
+  border-radius:50%;
+  background:rgba(255,255,255,.9);
+  cursor:pointer;
+  font-size:1.2rem;
+  box-shadow:0 4px 10px rgba(0,0,0,.2);
+}
+
+/* =========================
+   GAME CONTAINER
+========================= */
+
+#gameContainer{
+  width:100vw;
+  height:100vh;
+  display:grid;
+  gap:4px;
+  background:#0f5132;
+}
+
+.player-area{
+  position:relative;
+  overflow:hidden;
+  border:3px solid rgba(255,255,255,.2);
+  background:
+    linear-gradient(to bottom,
+      #8ce99a 0%,
+      #69db7c 35%,
+      #38d9a9 60%,
+      #228be6 100%);
+}
+
+/* =========================
+   PLAYER HUD
+========================= */
+
+.hud{
+  position:absolute;
+  top:10px;
+  left:10px;
+  z-index:10;
+  background:rgba(0,0,0,.3);
+  padding:10px;
+  border-radius:15px;
+  backdrop-filter:blur(4px);
+  font-size:.9rem;
+  min-width:150px;
+}
+
+.hud h3{
+  color:#fff;
+  margin-bottom:5px;
+}
+
+/* =========================
+   QUESTION
+========================= */
+
+.question{
+  position:absolute;
+  top:15px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(255,255,255,.9);
+  color:#333;
+  padding:12px 22px;
+  border-radius:20px;
+  font-size:1.2rem;
+  font-weight:bold;
+  z-index:10;
+  box-shadow:0 5px 15px rgba(0,0,0,.2);
+}
+
+/* =========================
+   WATER
+========================= */
+
+.water{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  height:38%;
+  background:
+    linear-gradient(to bottom,
+      #4dabf7,
+      #228be6);
+  overflow:hidden;
+}
+
+.wave{
+  position:absolute;
+  width:200%;
+  height:100%;
+  background:
+    radial-gradient(circle at center,
+    rgba(255,255,255,.25) 1px,
+    transparent 2px);
+  background-size:40px 40px;
+  animation:waveMove 8s linear infinite;
+  opacity:.5;
+}
+
+/* =========================
+   LILY PLATFORMS
+========================= */
+
+.platform{
+  position:absolute;
+  width:110px;
+  height:60px;
+  background:#2f9e44;
+  border-radius:50%;
+  border:4px solid #b2f2bb;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  font-weight:bold;
+  font-size:1.2rem;
+  box-shadow:
+    inset -10px -8px rgba(0,0,0,.15),
+    0 8px 10px rgba(0,0,0,.2);
+  transition:.4s;
+}
+
+.platform::before{
+  content:"";
+  position:absolute;
+  width:22px;
+  height:22px;
+  background:#b2f2bb;
+  top:0;
+  right:10px;
+  transform:rotate(45deg);
+}
+
+/* =========================
+   FROG
+========================= */
+
+.frog{
+  position:absolute;
+  width:70px;
+  height:70px;
+  border-radius:50%;
+  background:#40c057;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:2rem;
+  transition:.5s cubic-bezier(.34,1.56,.64,1);
+  z-index:5;
+  box-shadow:0 8px 15px rgba(0,0,0,.2);
+}
+
+.frog.jump{
+  transform:translateY(-25px) scale(1.1);
+}
+
+.frog.dead{
+  animation:sink 2s forwards;
+}
+
+/* =========================
+   PARTICLES
+========================= */
+
+.particle{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:white;
+  pointer-events:none;
+}
+
+/* =========================
+   CONTROLS
+========================= */
+
+.controls{
+  position:absolute;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:10px;
+  z-index:12;
+}
+
+.answer-btn{
+  padding:12px 16px;
+  min-width:60px;
+  border:none;
+  border-radius:15px;
+  background:#fff;
+  color:#333;
+  font-weight:bold;
+  font-size:1rem;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.answer-btn:hover{
+  transform:scale(1.05);
+}
+
+/* =========================
+   RAIN EFFECT
+========================= */
+
+.rain{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+
+.drop{
+  position:absolute;
+  width:2px;
+  height:15px;
+  background:rgba(255,255,255,.4);
+  animation:rainFall linear infinite;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:768px){
+
+  .question{
+    font-size:1rem;
+    padding:10px 16px;
+  }
+
+  .platform{
+    width:85px;
+    height:50px;
+    font-size:1rem;
+  }
+
+  .frog{
+    width:55px;
+    height:55px;
+    font-size:1.5rem;
+  }
+
+  .controls{
+    flex-wrap:wrap;
+    width:90%;
+    justify-content:center;
+  }
+
+  .answer-btn{
+    flex:1 1 40%;
+  }
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+
+@keyframes bounce{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-10px);}
+}
+
+@keyframes waveMove{
+  from{transform:translateX(0);}
+  to{transform:translateX(-50%);}
+}
+
+@keyframes sink{
+  0%{
+    transform:translateY(0) rotate(0);
+    opacity:1;
+  }
+  100%{
+    transform:translateY(250px) rotate(180deg);
+    opacity:0;
+  }
+}
+
+@keyframes rainFall{
+  from{
+    transform:translateY(-100px);
+  }
+  to{
+    transform:translateY(100vh);
+  }
+}
+
+.fade-in{
+  animation:fade .5s;
+}
+
+@keyframes fade{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- ======================================================
+     MENU AWAL
+====================================================== -->
+
+<div id="menu">
+  <div class="title">🐸 Froggy Math Jump</div>
+  <div class="subtitle">
+    Game Matematika Kelas 2 SD — Perkalian & Pembagian
+  </div>
+
+  <div class="menu-buttons">
+    <button class="menu-btn" onclick="startGame(1)">
+      Solo Mode
+    </button>
+
+    <button class="menu-btn" onclick="startGame(2)">
+      Duel Mode
+    </button>
+
+    <button class="menu-btn" onclick="startGame(4)">
+      Squad Mode
+    </button>
+  </div>
+</div>
+
+<!-- ======================================================
+     TOP BUTTONS
+====================================================== -->
+
+<div class="top-controls">
+  <button class="icon-btn" id="audioBtn">🔊</button>
+  <button class="icon-btn" id="fullscreenBtn">⛶</button>
+</div>
+
+<!-- ======================================================
+     GAME AREA
+====================================================== -->
+
+<div id="gameContainer"></div>
+
+<!-- ======================================================
+     AUDIO
+====================================================== -->
+
+<audio id="bgm" loop>
+  <source src="" type="audio/mpeg">
+</audio>
+
+<script>
+
+/* ======================================================
+   FROGGY MATH JUMP
+   Vanilla JavaScript
+====================================================== */
+
+const gameContainer = document.getElementById("gameContainer");
+const menu = document.getElementById("menu");
+
+let audioEnabled = true;
+
+/* ======================================================
+   FULLSCREEN BUTTON
+====================================================== */
+
+document.getElementById("fullscreenBtn")
+.addEventListener("click",()=>{
+
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen();
+  }else{
+    document.exitFullscreen();
+  }
+
+});
+
+/* ======================================================
+   AUDIO BUTTON
+====================================================== */
+
+document.getElementById("audioBtn")
+.addEventListener("click",(e)=>{
+
+  audioEnabled = !audioEnabled;
+
+  e.target.innerHTML = audioEnabled ? "🔊":"🔇";
+
+});
+
+/* ======================================================
+   START GAME
+====================================================== */
+
+function startGame(players){
+
+  menu.style.display = "none";
+
+  gameContainer.innerHTML = "";
+
+  /* =========================
+     GRID LAYOUT
+  ========================= */
+
+  if(players === 1){
+
+    gameContainer.style.gridTemplateColumns = "1fr";
+    gameContainer.style.gridTemplateRows = "1fr";
+
+  }else if(players === 2){
+
+    gameContainer.style.gridTemplateColumns = "1fr 1fr";
+
+  }else{
+
+    gameContainer.style.gridTemplateColumns = "1fr 1fr";
+    gameContainer.style.gridTemplateRows = "1fr 1fr";
+
+  }
+
+  for(let i=1;i<=players;i++){
+
+    createPlayerArea(i);
+
+  }
+
+}
+
+/* ======================================================
+   CREATE PLAYER AREA
+====================================================== */
+
+function createPlayerArea(id){
+
+  const area = document.createElement("div");
+  area.className = "player-area fade-in";
+
+  area.innerHTML = `
+
+    <div class="hud">
+      <h3>Player ${id}</h3>
+      <div>⭐ Score: <span class="score">0</span></div>
+      <div>❤️ Life: <span class="life">3</span></div>
+      <div>🎯 Level: <span class="level">1</span></div>
+      <div>⏱ Timer: <span class="timer">60</span></div>
+    </div>
+
+    <div class="question"></div>
+
+    <div class="water">
+      <div class="wave"></div>
+    </div>
+
+    <div class="rain"></div>
+
+    <div class="controls"></div>
+
+  `;
+
+  gameContainer.appendChild(area);
+
+  createRain(area);
+
+  initPlayerGame(area,id);
+
+}
+
+/* ======================================================
+   CREATE RAIN
+====================================================== */
+
+function createRain(area){
+
+  const rain = area.querySelector(".rain");
+
+  for(let i=0;i<30;i++){
+
+    const drop = document.createElement("div");
+
+    drop.className = "drop";
+
+    drop.style.left = Math.random()*100+"%";
+
+    drop.style.animationDuration =
+      (0.5 + Math.random()) + "s";
+
+    drop.style.animationDelay =
+      Math.random()*2 + "s";
+
+    rain.appendChild(drop);
+
+  }
+
+}
+
+/* ======================================================
+   INIT PLAYER GAME
+====================================================== */
+
+function initPlayerGame(area,id){
+
+  let score = 0;
+  let life = 3;
+  let level = 1;
+  let timer = 60;
+
+  const scoreEl = area.querySelector(".score");
+  const lifeEl = area.querySelector(".life");
+  const levelEl = area.querySelector(".level");
+  const timerEl = area.querySelector(".timer");
+  const questionEl = area.querySelector(".question");
+  const controlsEl = area.querySelector(".controls");
+
+  /* =========================
+     CREATE FROG
+  ========================= */
+
+  const frog = document.createElement("div");
+
+  frog.className = "frog";
+
+  frog.innerHTML = "🐸";
+
+  frog.style.left = "50%";
+  frog.style.bottom = "180px";
+
+  area.appendChild(frog);
+
+  /* =========================
+     TIMER
+  ========================= */
+
+  const timerInterval = setInterval(()=>{
+
+    timer--;
+
+    timerEl.textContent = timer;
+
+    if(timer <= 0){
+
+      clearInterval(timerInterval);
+
+      alert(`Player ${id} selesai!`);
+
+    }
+
+  },1000);
+
+  /* =========================
+     GENERATE QUESTION
+  ========================= */
+
+  function newQuestion(){
+
+    controlsEl.innerHTML = "";
+
+    area.querySelectorAll(".platform")
+      .forEach(p=>p.remove());
+
+    let isMultiply = Math.random() > .5;
+
+    let a,b,correct;
+
+    if(isMultiply){
+
+      a = rand(1,10);
+      b = rand(1,10);
+
+      correct = a*b;
+
+      questionEl.innerHTML =
+        `${a} × ${b} = ?`;
+
+    }else{
+
+      b = rand(1,10);
+      correct = rand(1,10);
+
+      a = b * correct;
+
+      questionEl.innerHTML =
+        `${a} ÷ ${b} = ?`;
+
+    }
+
+    let answers = [correct];
+
+    while(answers.length < 4){
+
+      let wrong =
+        correct + rand(-5,5);
+
+      if(
+        wrong !== correct &&
+        wrong > 0 &&
+        !answers.includes(wrong)
+      ){
+
+        answers.push(wrong);
+
+      }
+
+    }
+
+    shuffle(answers);
+
+    /* =========================
+       CREATE PLATFORMS
+    ========================= */
+
+    answers.forEach((ans,index)=>{
+
+      const platform =
+        document.createElement("div");
+
+      platform.className = "platform";
+
+      platform.textContent = ans;
+
+      platform.style.left =
+        (10 + index*22) + "%";
+
+      platform.style.top = "45%";
+
+      area.appendChild(platform);
+
+      /* =========================
+         CONTROL BUTTON
+      ========================= */
+
+      const btn =
+        document.createElement("button");
+
+      btn.className = "answer-btn";
+
+      btn.textContent = ans;
+
+      controlsEl.appendChild(btn);
+
+      btn.addEventListener("click",()=>{
+
+        frog.classList.add("jump");
+
+        setTimeout(()=>{
+          frog.classList.remove("jump");
+        },500);
+
+        frog.style.left =
+          platform.style.left;
+
+        if(ans === correct){
+
+          score += 10;
+
+          if(score % 50 === 0){
+
+            level++;
+
+          }
+
+          scoreEl.textContent = score;
+          levelEl.textContent = level;
+
+          happyEffect(area);
+
+          platform.style.transform =
+            "translateY(200px)";
+          platform.style.opacity = 0;
+
+          setTimeout(newQuestion,900);
+
+        }else{
+
+          life--;
+
+          lifeEl.textContent = life;
+
+          wrongEffect(area,frog);
+
+          if(life <= 0){
+
+            alert(`Player ${id} Game Over`);
+
+            setTimeout(()=>{
+              location.reload();
+            },1000);
+
+          }
+
+        }
+
+      });
+
+    });
+
+  }
+
+  newQuestion();
+
+}
+
+/* ======================================================
+   HAPPY EFFECT
+====================================================== */
+
+function happyEffect(area){
+
+  createParticles(area,25);
+
+}
+
+/* ======================================================
+   WRONG EFFECT
+====================================================== */
+
+function wrongEffect(area,frog){
+
+  frog.classList.add("dead");
+
+  createParticles(area,40);
+
+  setTimeout(()=>{
+
+    frog.classList.remove("dead");
+
+    frog.style.bottom = "180px";
+    frog.style.opacity = "1";
+
+  },1800);
+
+}
+
+/* ======================================================
+   PARTICLES
+====================================================== */
+
+function createParticles(area,count){
+
+  for(let i=0;i<count;i++){
+
+    const p =
+      document.createElement("div");
+
+    p.className = "particle";
+
+    p.style.left =
+      rand(10,90) + "%";
+
+    p.style.top =
+      rand(40,80) + "%";
+
+    area.appendChild(p);
+
+    let x = rand(-100,100);
+    let y = rand(-100,100);
+
+    p.animate([
+      {
+        transform:"translate(0,0)",
+        opacity:1
+      },
+      {
+        transform:`translate(${x}px,${y}px)`,
+        opacity:0
+      }
+    ],{
+      duration:1000
+    });
+
+    setTimeout(()=>p.remove(),1000);
+
+  }
+
+}
+
+/* ======================================================
+   HELPERS
+====================================================== */
+
+function rand(min,max){
+
+  return Math.floor(
+    Math.random()*(max-min+1)
+  ) + min;
+
+}
+
+function shuffle(arr){
+
+  for(let i=arr.length-1;i>0;i--){
+
+    let j =
+      Math.floor(Math.random()*(i+1));
+
+    [arr[i],arr[j]] =
+      [arr[j],arr[i]];
+
+  }
+
+}
+
+</script>
+</body>
+</html>
+```
